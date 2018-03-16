@@ -65,17 +65,18 @@ class KNN(object):
                 kArrayTrainingClasses=[];
                 kArrayTrainingClasses_training = [];
                 for classLoop in range(len(getClass)):
-                    kArrayTrainingClasses.append(trainingSet.iloc[:, 0:1].iloc[getClass[classLoop]][0])
-                finalClass.append(numpy.amax(kArrayTrainingClasses) );
+                    kArrayTrainingClasses.append(trainingSet.iloc[:, 0:1].iloc[getClass[classLoop]-1][0])
+                finalClass.append((scipy.stats.mode(kArrayTrainingClasses,axis=0)[0])[0] );
 
-            for trainingLoop in range(trainingSet.shape[0]):
-                distances_from_i_dict_training = dict(enumerate(result_training[trainingLoop]))
-                distances_from_i_dict_training = sorted(distances_from_i_dict_training.items(), key=operator.itemgetter(1))
+                distances_from_i_dict_training = dict(enumerate(result_training[testLoop]))
+                distances_from_i_dict_training = sorted(distances_from_i_dict_training.items(),
+                                                        key=operator.itemgetter(1))
                 getClass_training = self.findClass(distances_from_i_dict_training[:Kinput], Kinput)
                 kArrayTrainingClasses_training = [];
                 for classLoop_training in range(len(getClass_training)):
-                    kArrayTrainingClasses_training.append(trainingSet.iloc[:, 0:1].iloc[getClass_training[classLoop_training]][0])
-                finalClass_training.append(numpy.amax(kArrayTrainingClasses_training));
+                    kArrayTrainingClasses_training.append(
+                        trainingSet.iloc[:, 0:1].iloc[getClass_training[classLoop_training] - 1][0])
+                finalClass_training.append((scipy.stats.mode(kArrayTrainingClasses_training, axis=0)[0])[0]);
 
             finalClass=pd.DataFrame(numpy.array(finalClass).reshape(1, 1000))
             data = Counter(numpy.sum(finalClass == testSet.iloc[:, :1].T, axis=0))
@@ -83,12 +84,12 @@ class KNN(object):
             testError=1-accuracy;
             kTest[Kinput]=testError;
 
-            finalClass_training = pd.DataFrame(numpy.array(finalClass_training).reshape(1, 6000))
-            data_training = Counter(numpy.sum(finalClass_training == trainingSet.iloc[:, :1].T, axis=0))
-            accuracy_training = data_training.most_common(1)[0][1] / 6000;
+            finalClass_training = pd.DataFrame(numpy.array(finalClass_training).reshape(1, 1000))
+            data_training = Counter(numpy.sum(finalClass_training == testSet.iloc[:, :1].T, axis=0))
+            accuracy_training = data_training.most_common(1)[0][1] / 1000;
             trainingError = 1 - accuracy_training;
             kTraining[Kinput] = trainingError;
-        self.plot_learning_curve(kTest,kTraining)
+        self.plotCurve(kTest,kTraining)
             # self.findAccuracy(finalClass)
 
 
@@ -101,13 +102,13 @@ class KNN(object):
             i=i+1;
         return getInitialClass;
 
-    def plot_learning_curve(self, plot_curve1_dict, plot_curve2_dict):
+    def plotCurve(self, plot_curve1_dict,plot_curve2_dict):
         x, y_error1 = zip(*sorted(plot_curve1_dict.items()))
         x, y_error2 = zip(*sorted(plot_curve2_dict.items()))
         fig = plt.figure()
         plt.title('Error vs Value of K')
-        plt.plot(x, y_error1, 'b', label='Training Error')
-        plt.plot(x, y_error2, 'r', label='Test Error')
+        plt.plot(x, y_error1, 'b', label='Test Error')
+        plt.plot(x, y_error2, 'r', label='Training Error')
         plt.ylabel('Error Value')
         plt.xlabel('K')
         plt.legend()
@@ -129,9 +130,9 @@ class KNN(object):
 if __name__ == "__main__":
     obj = KNN();
     # obj.input_data()
-    # obj.convert('train-images.idx3-ubyte','train-labels.idx1-ubyte','Training.csv',6000);
-    # obj.convert('t10k-images.idx3-ubyte', 't10k-labels.idx1-ubyte', 'Testing.csv', 1000);
-    obj.KNNAlgo(pd.read_csv('Testing.csv', sep=",", header=None),pd.read_csv('Training.csv', sep=",", header=None))
+    obj.convert('train-images.idx3-ubyte','train-labels.idx1-ubyte','Training.csv',6000);
+    obj.convert('t10k-images.idx3-ubyte', 't10k-labels.idx1-ubyte', 'Testing.csv', 10000);
+    obj.KNNAlgo(pd.read_csv('Testing.csv', sep=",", header=None, skiprows=9000),pd.read_csv('Training.csv', sep=",", header=None))
 
 
 
