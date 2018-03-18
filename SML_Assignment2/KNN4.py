@@ -68,14 +68,13 @@ class KNN(object):
                     kArrayTrainingClasses.append(trainingSet.iloc[:, 0:1].iloc[getClass[classLoop]-1][0])
                 finalClass.append((scipy.stats.mode(kArrayTrainingClasses,axis=0)[0])[0] );
 
-                distances_from_i_dict_training = dict(enumerate(result_training[testLoop]))
-                distances_from_i_dict_training = sorted(distances_from_i_dict_training.items(),
-                                                        key=operator.itemgetter(1))
+            for trainingLoop in range(trainingSet.shape[0]):
+                distances_from_i_dict_training = dict(enumerate(result_training[trainingLoop]))
+                distances_from_i_dict_training = sorted(distances_from_i_dict_training.items(), key=operator.itemgetter(1))
                 getClass_training = self.findClass(distances_from_i_dict_training[:Kinput], Kinput)
                 kArrayTrainingClasses_training = [];
                 for classLoop_training in range(len(getClass_training)):
-                    kArrayTrainingClasses_training.append(
-                        trainingSet.iloc[:, 0:1].iloc[getClass_training[classLoop_training] - 1][0])
+                    kArrayTrainingClasses_training.append(trainingSet.iloc[:, 0:1].iloc[getClass_training[classLoop_training]-1][0])
                 finalClass_training.append((scipy.stats.mode(kArrayTrainingClasses_training, axis=0)[0])[0]);
 
             finalClass=pd.DataFrame(numpy.array(finalClass).reshape(1, 1000))
@@ -84,9 +83,9 @@ class KNN(object):
             testError=1-accuracy;
             kTest[Kinput]=testError;
 
-            finalClass_training = pd.DataFrame(numpy.array(finalClass_training).reshape(1, 1000))
-            data_training = Counter(numpy.sum(finalClass_training == testSet.iloc[:, :1].T, axis=0))
-            accuracy_training = data_training.most_common(1)[0][1] / 1000;
+            finalClass_training = pd.DataFrame(numpy.array(finalClass_training).reshape(1, 6000))
+            data_training = Counter(numpy.sum(finalClass_training == trainingSet.iloc[:, :1].T, axis=0))
+            accuracy_training = data_training.most_common(1)[0][1] / 6000;
             trainingError = 1 - accuracy_training;
             kTraining[Kinput] = trainingError;
         self.plotCurve(kTest,kTraining)
@@ -130,8 +129,8 @@ class KNN(object):
 if __name__ == "__main__":
     obj = KNN();
     # obj.input_data()
-    obj.convert('train-images.idx3-ubyte','train-labels.idx1-ubyte','Training.csv',6000);
-    obj.convert('t10k-images.idx3-ubyte', 't10k-labels.idx1-ubyte', 'Testing.csv', 10000);
+    # obj.convert('train-images.idx3-ubyte','train-labels.idx1-ubyte','Training.csv',6000);
+    # obj.convert('t10k-images.idx3-ubyte', 't10k-labels.idx1-ubyte', 'Testing.csv', 10000);
     obj.KNNAlgo(pd.read_csv('Testing.csv', sep=",", header=None, skiprows=9000),pd.read_csv('Training.csv', sep=",", header=None))
 
 
